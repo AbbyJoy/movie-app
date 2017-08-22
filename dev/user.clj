@@ -1,9 +1,9 @@
 (ns user
   (:require [movie-app.db :as db]
             [movie-app.config :as config]
+            [movie-app.response :as response]
             [clojure.pprint :as pprint]
-            [movie-app.handler :as handler]
-            [ring.adapter.jetty :as jetty]))
+            [movie-app.handler :as handler]))
 
 (defn init []
   (db/db-setup config/host config/port config/db config/staging-db
@@ -33,10 +33,6 @@
                              :ssl?         false
                              }))
   ([] (boot false)))
-
-(defn gen-stars-per-movie [movie-id]
-  (let [reviews (filter #(= (:movie-id %) movie-id)  (db/get-maps "reviews"))]
-    (/ (reduce + (map read-string (map :rating reviews))) (count reviews))))
 
 ;;; Data Generation
 

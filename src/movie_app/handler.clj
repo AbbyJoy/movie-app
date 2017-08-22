@@ -18,8 +18,8 @@
 
 (cc/defroutes app-routes
   (cc/routes (cc/GET "/" [] (resp/redirect "/index.html"))
-             (cc/GET "/movie" [] (response/get-col "movies"))
-             (cc/GET "/movie/:id" [id] (response/get-map-by-id  "movies" id))
+             (cc/GET "/movie" [] (response/get-movies-list))
+             (cc/GET "/movie/:id" [id] (response/get-movie-entry id))
              (route/resources "/")
              (route/not-found "Not Found")))
 
