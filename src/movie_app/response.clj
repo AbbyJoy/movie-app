@@ -33,20 +33,37 @@
   (let [reviews (filter #(= (:movie-id %) movie-id)  (db/get-maps "reviews"))]
     (/ (reduce + (map read-string (map :rating reviews))) (count reviews))))
 
-(defn get-map-by-id [col id]
-  (let [result
-        (try
-          (db/get-by-id col  id)
-          (catch IllegalArgumentException e (str "Caught exception: " (.getMessage e))))]
-    (result-nil? result)))
+(defn reviews? [movie-id]
+  (let [reviews (filter #(= (:movie-id %) movie-id)  (db/get-maps "reviews"))]
+    (count reviews)))
+
+(defn convert-to-object-id [id]
+  (if (= ObjectId (class id))
+    id (ObjectId. id)))
+
+(defn get-movie-reviews [movie-id]
+  (filter #(= (:movie-id %)
+              (convert-to-object-id movie-id))  (db/get-maps "reviews")))
+
+(defn get-movie-by-id [id]
+  (try
+    (assoc (db/get-by-id "movies"  id)
+           :stars (gen-stars-per-movie (convert-to-object-id id))
+           :reviews (get-movie-reviews (convert-to-object-id id)))
+    (catch IllegalArgumentException e
+      (str "Caught exception: " (.getMessage e)))))
 
 (defn get-rated-movies []
   (for [movie (db/get-maps "movies")]
-    (assoc movie :stars (gen-stars-per-movie (:_id movie)))))
+    (assoc movie :stars (gen-stars-per-movie (:_id movie))
+           :reviews (get-movie-reviews (:_id movie)))))
+
+;;; Response endpoints that include movie and review information
 
 (defn get-movies-list []
-  (let [result (get-rated-movies)]
+  (let [result get-rated-movies]
     (result-nil? result)))
 
 (defn get-movie-entry [id-string]
-  (get-map-by-id  "movies" id-string))
+  (let [result (get-movie-by-id id-string)]
+    (result-nil? result)))

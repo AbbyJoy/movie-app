@@ -1,9 +1,11 @@
 (ns user
+  (:import [org.bson.types ObjectId])
   (:require [movie-app.db :as db]
             [movie-app.config :as config]
             [movie-app.response :as response]
             [clojure.pprint :as pprint]
-            [movie-app.handler :as handler]))
+            [movie-app.handler :as handler]
+            [ring.adapter.jetty :as jetty]))
 
 (defn init []
   (db/db-setup config/host config/port config/db config/staging-db
@@ -36,30 +38,29 @@
 
 ;;; Data Generation
 
-(def sequel-numerals
-  (let [lst ["III" "IV" "V" "VI"]]
-    (apply concat (repeat lst))))
-
 (def next-sequel-numeral
-  (let [counter (atom 0)]
+  (let [counter (atom 0)
+        sequel-numerals (apply concat
+                               (repeat ["III" "IV" "V" "VI" "VII" "VIII"]))]
     (fn [] (swap! counter inc)
       (nth sequel-numerals @counter))))
 
-(def sequel-suffixes
-  (let [lst ["Retribution" "Attack of the Clones" "Extinction" "Salvation"
-             "Apocalypse" "Resurrection" "The Final Chapter" "New Moon"
-             "The Last Jedi" "Reloaded" "Revelations"]]
-    (apply concat (repeat lst))))
-
 (def next-sequel-suffix
-  (let [counter (atom 0)]
+  (let [counter (atom 0)
+        sequel-suffixes
+        (apply concat
+               (repeat ["Retribution" "Attack of the Clones" "Extinction"
+                        "Salvation" "Apocalypse" "Resurrection" "Endgame"
+                        "Simba's Pride" "Reloaded" "The Revenge" "Oblivion"
+                        "Age of Extinction" "New Moon" "The Final Chapter"
+                        "The College Years"]))]
     (fn [] (swap! counter inc)
       (nth sequel-suffixes @counter))))
 
 (def movies-base
   ["Weekend at Bernie's" "Revenge of the Nerds" "The Karate Kid"
-   "Look Who's Talking" "Resident Evil" "Terminator" "Star Trek" "Transformers"
-   "Police Academy"])
+   "Look Who's Talking" "Resident Evil" "The Parent Trap" "Star Trek"
+   "Transformers" "Police Academy" "Terminator"])
 
 (def directors
   ["Michael Bay" "JJ Abrams" "Uwe Boll"])
@@ -77,16 +78,18 @@
      :box-office (str (* 10000000 (int (rand-int 120))))}))
 
 (def first-names
-  ["Bronk" "Bric" "Bzzt" "Brz" "Brunk" "Bonk" "Bryce" "Biff"])
+  ["Bronk" "Bric" "Bzzt" "Brz" "Brunk" "Bonk" "Bryce" "Biff" "Brno" "Bro"
+   "Brian" "Bron" "Bref"])
 
 (def last-names
-  ["Moo" "Mahr" "Mmf" "Mnu" "Monroe" "Mull" "Mueller" "Moof"])
+  ["Moo" "Mahr" "Mmf" "Mnu" "Monroe" "Mull" "Mueller" "Moof" "Mannlicher"
+   "Mott" "Mann" "Mabel" "Moz"])
 
 (def features
   ["explosions" "vampires" "zombies" "male nudity"])
 
 (def positive-reviews
-  ["Gratuitous quantities of $ just the way I like it."
+  ["Gratuitous quantities of $; just the way I like it."
    "Gives America what it wants: lots of $."
    "Beautiful non-stop $... often in slow motion."
    "Finally a movie that combines werewolves and $."
@@ -95,14 +98,16 @@
 (def neutral-reviews
   ["Has a reasonably satisfying quantities of $."
    "Only way to improve would be more $."
-   "Okay but hopefully forthcoming the prequel has more $."
-   "+1 for having $. -1 for no close-ups of $."])
+   "Okay but hopefully the forthcoming prequel has more $."
+   "+1 for having $. -1 for no close-ups of $."
+   "Had just enough $ to keep me awake."])
 
 (def negative-reviews
   ["Not nearly enough $."
-   "When I pay good money for $. I expects lots of $."
+   "When I pay good money for $. I expect lots of $."
    "Guess I'll wait for the next reboot to see the $ I expect."
-   "I don't think Hollywood understands my insatiable appetite for $."])
+   "I don't think Hollywood understands my insatiable appetite for $."
+   "Stop making me think and give me the $ I want."])
 
 (defn gen-reviews [num-reviewers avg-reviews-per movie-names]
   (let [next-movie (let [counter (atom 0)]
@@ -110,7 +115,7 @@
                        (nth (apply concat (repeat movie-names)) @counter)))]
     (for [reviewer (for [_ (range num-reviewers)]
                      {:name (str (rand-nth first-names) " " (rand-nth last-names))
-                      :review-count (Math/abs (- avg-reviews-per (rand-int avg-reviews-per)))})
+                      :review-count (- avg-reviews-per (rand-int avg-reviews-per))})
           _        (range (:review-count reviewer))
           :let [rating (rand-int 6)]]
       {:movie-name (next-movie)
@@ -123,10 +128,10 @@
                 #"\$" (rand-nth features))})))
 
 (defn gen-files []
-  (let [movies-keys [:name :director :release-date :box-office]
+  (let [movies-keys  [:name :director :release-date :box-office]
         reviews-keys [:movie-name :name :rating :review]
-        movies-data (gen-movies 2)
-        reviews-data (gen-reviews 7 5 (map :name movies-data))]
+        movies-data  (gen-movies 2)
+        reviews-data (gen-reviews 30 5 (map :name movies-data))]
     (spit "movies.csv"
           (->> (map #((apply juxt movies-keys) %) movies-data)
                (into [(map name movies-keys)])
