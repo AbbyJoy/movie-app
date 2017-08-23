@@ -56,12 +56,13 @@
 (defn get-rated-movies []
   (for [movie (db/get-maps "movies")]
     (assoc movie :stars (gen-stars-per-movie (:_id movie))
-           :reviews (get-movie-reviews (:_id movie)))))
+           :reviews (get-movie-reviews (:_id movie))
+           )))
 
 ;;; Response endpoints that include movie and review information
 
 (defn get-movies-list []
-  (let [result get-rated-movies]
+  (let [result (get-rated-movies)]
     (result-nil? result)))
 
 (defn get-movie-entry [id-string]
