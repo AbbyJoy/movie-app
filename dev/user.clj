@@ -19,12 +19,17 @@
           :let [header-vector (map #(keyword %) (first $))]]
       (into {} (map #(vector %1 %2) header-vector record)))))
 
+(defn read-rating-as-num [m]
+  (let [rating (:rating m)]
+    (assoc m :rating (read-string rating))))
+
 ;; dissoc and assoc
 (defn ingest-reviews [in-file]
   (for [record (ingest in-file)
         :let [movie-id (:_id  (db/get-map "movies" {:name (:movie-name record)}))]]
     (as-> (dissoc record :movie-name) $
       (assoc $ :movie-id movie-id)
+      (read-rating-as-num $)
       (db/put-map "reviews" $))
     ))
 

@@ -31,7 +31,7 @@
 
 (defn gen-stars-per-movie [movie-id]
   (let [reviews (filter #(= (:movie-id %) movie-id)  (db/get-maps "reviews"))]
-    (/ (reduce + (map read-string (map :rating reviews))) (count reviews))))
+    (/ (reduce + (map :rating reviews)) (count reviews))))
 
 (defn reviews? [movie-id]
   (let [reviews (filter #(= (:movie-id %) movie-id)  (db/get-maps "reviews"))]
