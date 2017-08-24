@@ -42,8 +42,8 @@
     id (ObjectId. id)))
 
 (defn get-movie-reviews [movie-id]
-  (filter #(= (:movie-id %)
-              (convert-to-object-id movie-id))  (db/get-maps "reviews")))
+  (db/get-maps "reviews" :conditions
+               {:movie-id (convert-to-object-id movie-id)}))
 
 (defn get-movie-by-id [id]
   (try

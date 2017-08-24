@@ -30,8 +30,7 @@
     (as-> (dissoc record :movie-name) $
       (assoc $ :movie-id movie-id)
       (read-rating-as-num $)
-      (db/put-map "reviews" $))
-    ))
+      (db/put-map "reviews" $))))
 
 (defn boot
   ([join?] (jetty/run-jetty handler/app
