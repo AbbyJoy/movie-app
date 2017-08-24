@@ -1,6 +1,7 @@
 # movie-app
 
-A Clojure library designed to ... well, that part is up to you.
+Web app for learning full stack Javascript/Clojure/Mongo web app development Edit
+Add topics
 
 ## Usage
 
