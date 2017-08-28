@@ -21,7 +21,7 @@
 
 (defn read-rating-as-num [m]
   (let [rating (:rating m)]
-    (assoc m :rating (read-string rating))))
+    (assoc m :rating (double (read-string rating)))))
 
 ;; dissoc and assoc
 (defn ingest-reviews [in-file]

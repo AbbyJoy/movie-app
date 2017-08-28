@@ -45,19 +45,21 @@
   (db/get-maps "reviews" :conditions
                {:movie-id (convert-to-object-id movie-id)}))
 
+(defn assoc-stars-reviews [movie movie-id]
+  (let [id (convert-to-object-id movie-id)]
+    (assoc (db/get-by-id "movies" (convert-to-object-id movie-id))
+           :stars (format "%.1f" (gen-stars-per-movie (convert-to-object-id movie-id)))
+           :reviews (get-movie-reviews (convert-to-object-id movie-id)))))
+
 (defn get-movie-by-id [id]
   (try
-    (assoc (db/get-by-id "movies"  id)
-           :stars (gen-stars-per-movie (convert-to-object-id id))
-           :reviews (get-movie-reviews (convert-to-object-id id)))
+    (assoc-stars-reviews (db/get-by-id "movies" (convert-to-object-id id)) id)
     (catch IllegalArgumentException e
       (str "Caught exception: " (.getMessage e)))))
 
 (defn get-rated-movies []
   (for [movie (db/get-maps "movies")]
-    (assoc movie :stars (gen-stars-per-movie (:_id movie))
-           :reviews (get-movie-reviews (:_id movie))
-           )))
+    (assoc-stars-reviews movie (:_id movie))))
 
 ;;; Response endpoints that include movie and review information
 
