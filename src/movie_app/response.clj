@@ -16,17 +16,17 @@
    :body (cheshire/generate-string
           to-render {:key-fn #(util/memoized->camelCase (name %))})})
 
-(defn json-404 []
+(defn json-404 [e]
   {:status 404
    :headers {"Content-Type" "text/json; charset=utf-8"
              "Cache-Control" "no-cache, no-store, must-revalidate"
              "Pragma" "no-cache"
              "Expires" "0"}
-   :body (cheshire/generate-string "Page not found")})
+   :body (cheshire/generate-string e)})
 
 (defn result-nil? [result]
   (if (nil? result)
-    (json-404)
+    (json-404 "404 - Page not found")
     (json-200 result)))
 
 (defn gen-stars-per-movie [movie-id]
@@ -47,15 +47,12 @@
 
 (defn assoc-stars-reviews [movie movie-id]
   (let [id (convert-to-object-id movie-id)]
-    (assoc (db/get-by-id "movies" (convert-to-object-id movie-id))
-           :stars (format "%.1f" (gen-stars-per-movie (convert-to-object-id movie-id)))
-           :reviews (get-movie-reviews (convert-to-object-id movie-id)))))
+    (assoc (db/get-by-id "movies" id)
+           :stars (format "%.1f" (gen-stars-per-movie id))
+           :reviews (get-movie-reviews id))))
 
 (defn get-movie-by-id [id]
-  (try
-    (assoc-stars-reviews (db/get-by-id "movies" (convert-to-object-id id)) id)
-    (catch IllegalArgumentException e
-      (str "Caught exception: " (.getMessage e)))))
+  (assoc-stars-reviews (db/get-by-id "movies" (convert-to-object-id id)) id))
 
 (defn get-rated-movies []
   (for [movie (db/get-maps "movies")]
@@ -68,5 +65,8 @@
     (result-nil? result)))
 
 (defn get-movie-entry [id-string]
-  (let [result (get-movie-by-id id-string)]
-    (result-nil? result)))
+  (try
+    (let [result (get-movie-by-id id-string)]
+      (result-nil? result))
+    (catch IllegalArgumentException e
+      (json-404 (.toString e)))))
