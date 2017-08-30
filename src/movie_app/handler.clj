@@ -20,8 +20,11 @@
   (cc/routes (cc/GET "/" [] (resp/redirect "/index.html"))
              (cc/GET "/movie" [] (response/get-movies-list))
              (cc/GET "/movie/:id" [id] (response/get-movie-entry id))
+             (cc/GET "/review" [] (response/get-review-list))
+             (cc/GET "/review/:id" [id] (response/get-review-entry id))
+             (cc/PUT "/review/:id" {params :params} (response/update-review params))
              (route/resources "/")
              (route/not-found "Not Found")))
 
 (def app
-  (rmd/wrap-defaults app-routes rmd/site-defaults))
+  (rmd/wrap-defaults app-routes (assoc-in rmd/site-defaults [:security :anti-forgery] false)))

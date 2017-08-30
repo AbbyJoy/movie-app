@@ -58,6 +58,14 @@
   (for [movie (db/get-maps "movies")]
     (assoc-stars-reviews movie (:_id movie))))
 
+(defn get-review-by-id [id]
+  (db/get-by-id "reviews" (convert-to-object-id id)))
+
+(defn update-review-by-id [params]
+  (let [id (:id params)
+        document (dissoc params :id)]
+    (db/update-by-id "reviews" document (convert-to-object-id id))))
+
 ;;; Response endpoints that include movie and review information
 
 (defn get-movies-list []
@@ -69,4 +77,23 @@
     (let [result (get-movie-by-id id-string)]
       (result-nil? result))
     (catch IllegalArgumentException e
+      (json-404 (.toString e)))))
+
+(defn get-review-list []
+  (let [result (db/get-maps "reviews")]
+    (result-nil? result)))
+
+(defn get-review-entry [id-string]
+  (try
+    (let [result (get-review-by-id id-string)]
+      (result-nil? result))
+    (catch IllegalArgumentException e
+      (json-404 (.toString e)))))
+
+(defn update-review [params]
+  (try
+    (result-nil? (update-review-by-id params))
+    (catch IllegalArgumentException e
+      (json-404 (.toString e)))
+    (catch Exception e
       (json-404 (.toString e)))))
