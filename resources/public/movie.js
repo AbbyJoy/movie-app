@@ -1,5 +1,4 @@
 
-//TODO: Add the dropdown/button for get movie
 
 var convertToCurrency = function(number){
     return '$' +  number.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
@@ -18,6 +17,7 @@ function makeMovieItem(movie) {
         +"</li>";
 };
 
+// Get Movie list buton click event handler
 $("#movie-list-btn").click(function() {
     $.getJSON( "/movie", function(data) {
         var items = [];
@@ -36,6 +36,7 @@ $("#movie-list-btn").click(function() {
     });
 });
 
+// Get movie button click event handler
 $("#movie-get-btn").click(function() {
     var movieId = $("#movie-entry-select").val();
     var urlMovie = "/movie/" + movieId;
@@ -45,6 +46,7 @@ $("#movie-get-btn").click(function() {
     });
 });
 
+// Contains dropdown of movies for get movie
 $(document).ready( function () {
     $.getJSON( "/movie", function(data) {
         var items = [];
