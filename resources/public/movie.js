@@ -17,6 +17,30 @@ function makeMovieItem(movie) {
         +"</li>";
 };
 
+function makeSingleMovieItem(movie) {
+    return "<li id='" + movie._id + "'>" + movie.name
+        + " directed by " + movie.director
+        + "<ul id='meta-" + movie._id + "'>"
+        + "<li>Release Date: " + movie.releaseDate + "</li>"
+        + "<li>Box Office Earnings: "
+        + convertToCurrency(movie.boxOffice) + "</li>"
+        + "<li>Stars: " + movie.stars + "</li>"
+        + "<li>Reviews:</li>"
+        + "</ul>"
+        +"</li>";
+};
+
+
+function makeReviewItem(review) {
+    return "<li id='" + review._id + "' class='" +review.movieId
+        + "'>\"" + review.review + "\""
+        + "<ul>"
+        + "<li>Stars: " + review.rating + "</li>"
+        + "<li>Reviewer: " + review.name + "</li>"
+        + "</ul>"
+        +"</li>";
+};
+
 // Get Movie list buton click event handler
 $("#movie-list-btn").click(function() {
     $.getJSON( "/movie", function(data) {
@@ -40,10 +64,23 @@ $("#movie-list-btn").click(function() {
 $("#movie-get-btn").click(function() {
     var movieId = $("#movie-entry-select").val();
     var urlMovie = "/movie/" + movieId;
+    var movieMeta = "#meta-" + movieId;
 
     $.getJSON( urlMovie, function(data) {
-        $( "#movie-entry" ).html("<ul>" + makeMovieItem(data) + "</ul>");
+        var reviews = [];
+        $( "#movie-entry" ).html("<ul>" + makeSingleMovieItem(data) + "</ul>");
+        $.each( data.reviews, function( key, review ) {
+            reviews.push( makeReviewItem(review));
+        });
+        $( "<ul/>", {
+            "class": "review-list",
+            html: reviews.join( "" )
+        }).appendTo( movieMeta );
     });
+});
+
+$(".review-edit").click(function() {
+    console.log("click");
 });
 
 // Contains dropdown of movies for get movie
