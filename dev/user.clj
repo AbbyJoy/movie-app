@@ -23,6 +23,9 @@
   (let [rating (:rating m)]
     (assoc m :rating (double (read-string rating)))))
 
+(defn ingest-movies [in-file]
+  (db/put-maps "movies" (ingest in-file)))
+
 ;; dissoc and assoc
 (defn ingest-reviews [in-file]
   (for [record (ingest in-file)
