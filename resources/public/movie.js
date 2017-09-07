@@ -37,6 +37,7 @@ function makeReviewItem(review) {
         + "<ul>"
         + "<li>Stars: " + review.rating + "</li>"
         + "<li>Reviewer: " + review.name + "</li>"
+        + "<li> <button id='edit-" + review._id +"' class='edit-review-btn' type='button' name='editReviewBtn'>Edit</button></li>"
         + "</ul>"
         +"</li>";
 };
@@ -79,8 +80,34 @@ $("#movie-get-btn").click(function() {
     });
 });
 
-$(".review-edit").click(function() {
-    console.log("click");
+function makeReviewForm(review) {
+    return "<form action='/review/" + review._id + "' method='post'>"
+        + "<div><label for='name'>Name: </label>"
+        + "<input type='text' name='name' value='" + review.name
+        + "'/></div>"
+        + "<div><label for='rating'>Stars: </label>"
+        + "<input type='text' name='rating' value='" + review.rating
+        + "'/></div>"
+        + "<div><label for='review'>Review: </label>"
+        + "<textarea name='review' rows='4'>" + review.review
+        + "</textarea></div>"
+        + "<div class='button'>"
+        + "<button type='submit'>Submit</button>"
+        + "</div>"
+        + "</form>";
+};
+
+$(document).on("click",".edit-review-btn", function(event) {
+    var editBtnId = event.currentTarget.id;
+    var reviewId = editBtnId.split("-")[1];
+    var urlReview = "/review/" + reviewId;
+    var reviewIdSelect = "#" + reviewId;
+
+    $.getJSON( urlReview, function(data) {
+        var reviewForm = makeReviewForm(data);
+        $(reviewIdSelect).html(reviewForm);
+
+    });
 });
 
 // Contains dropdown of movies for get movie
