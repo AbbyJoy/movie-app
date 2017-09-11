@@ -81,7 +81,7 @@ $("#movie-get-btn").click(function() {
 });
 
 function makeReviewForm(review) {
-    return "<form action='/review/" + review._id + "' method='post'>"
+    return "<div class='edit-review-form' id='" + review._id + "'>"
         + "<div><label for='name'>Name: </label>"
         + "<input type='text' name='name' value='" + review.name
         + "'/></div>"
@@ -89,12 +89,12 @@ function makeReviewForm(review) {
         + "<input type='text' name='rating' value='" + review.rating
         + "'/></div>"
         + "<div><label for='review'>Review: </label>"
-        + "<textarea name='review' rows='4'>" + review.review
-        + "</textarea></div>"
-        + "<div class='button'>"
+        + "<input name='review' value='" + review.review
+        + "'/></div>"
+        + "<div class='review-submit-btn' reviewid='" +review._id + "'>"
         + "<button type='submit'>Submit</button>"
         + "</div>"
-        + "</form>";
+        + "</div>";
 };
 
 $(document).on("click",".edit-review-btn", function(event) {
@@ -104,10 +104,30 @@ $(document).on("click",".edit-review-btn", function(event) {
     var reviewIdSelect = "#" + reviewId;
 
     $.getJSON( urlReview, function(data) {
-        var reviewForm = makeReviewForm(data);
+        var reviewForm =  makeReviewForm(data);
         $(reviewIdSelect).html(reviewForm);
-
     });
+});
+
+$(document).on("click", ".review-submit-btn", function(event) {
+    console.log("Clicked Submit Button");
+    var reviewId = event.currentTarget.attributes.reviewid.nodeValue;
+    var reviewFields = $('#' + reviewId).find('input');
+    var urlReview = "/review/" + reviewId;
+    var sendData = {};
+    $.each(reviewFields, function(index, dataMap) {
+        sendData[dataMap.name] = dataMap.value;
+    });
+
+    $.ajax({
+        type: 'put',
+	url: urlReview,
+	data: sendData,
+        sucess: function(){
+
+        }
+    });
+    window.location.reload(true);
 });
 
 // Contains dropdown of movies for get movie
