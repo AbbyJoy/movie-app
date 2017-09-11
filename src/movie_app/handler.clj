@@ -22,7 +22,7 @@
              (cc/GET "/movie/:id" [id] (response/get-movie-entry id))
              (cc/GET "/review" [] (response/get-review-list))
              (cc/GET "/review/:id" [id] (response/get-review-entry id))
-             (cc/POST "/review/:id" {params :params} (response/update-review params))
+             (cc/PUT "/review/:id" {params :params} (response/update-review params))
              (route/resources "/")
              (route/not-found "Not Found")))
 
