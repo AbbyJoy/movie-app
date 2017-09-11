@@ -29,9 +29,13 @@
     (json-404 "404 - Page not found")
     (json-200 result)))
 
+(defn get-review-rating [review]
+  (let [rating (:rating review)]
+    (if (= String (class rating)) (double (read-string rating)) rating)))
+
 (defn gen-stars-per-movie [movie-id]
   (let [reviews (filter #(= (:movie-id %) movie-id)  (db/get-maps "reviews"))]
-    (/ (reduce + (map :rating reviews)) (count reviews))))
+    (/ (reduce + (map get-review-rating reviews)) (count reviews))))
 
 (defn reviews? [movie-id]
   (let [reviews (filter #(= (:movie-id %) movie-id)  (db/get-maps "reviews"))]
@@ -69,8 +73,11 @@
 ;;; Response endpoints that include movie and review information
 
 (defn get-movies-list []
-  (let [result (get-rated-movies)]
-    (result-nil? result)))
+  (try
+    (let [result (get-rated-movies)]
+      (result-nil? result))
+    (catch Exception e
+      (json-404 (.toString e)))))
 
 (defn get-movie-entry [id-string]
   (try
@@ -92,8 +99,8 @@
 
 (defn update-review [params]
   (try
-    (result-nil? (update-review-by-id params))
+    (result-nil?(update-review-by-id params))
     (catch IllegalArgumentException e
-      (json-404 (.toString e)))
+      (json-404 (str (.toString e) e)))
     (catch Exception e
-      (json-404 (.toString e)))))
+      (json-404 (str (.toString e) (.getStackTrace e))))))
